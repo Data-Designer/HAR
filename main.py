@@ -78,23 +78,23 @@ def topk_acc(y, p, k, y_grouped):
     correct_counter = Counter()
     
     for i in range(y.shape[0]):
-        true_labels = np.nonzero(y[i, :])[0]
-        predictions = np.argsort(p[i, :])[-k:]
+        true_labels = np.nonzero(y[i, :])[0] # 真实的[1,0,1,0,1]->[32,33,46]
+        predictions = np.argsort(p[i, :])[-k:] # topk [10,9,8]
         for l in true_labels:
             total_counter[l] += 1
-            correct_counter[l] += np.in1d(l, predictions, assume_unique=True).sum()
+            correct_counter[l] += np.in1d(l, predictions, assume_unique=True).sum() # 如果存在则加1
 
-    y_grouped = args.grouped_y
+    y_grouped = args.grouped_y # {'10':[32,33,34]}
     n_groups = len(y_grouped)
-    total_labels = [0] * n_groups
+    total_labels = [0] * n_groups # 每个组别。
     correct_labels = [0] * n_groups
     for i, group in enumerate(y_grouped):
         for l in group:
             correct_labels[i] += correct_counter[l]
             total_labels[i] += total_counter[l]
 
-    acc_at_k_grouped = [x/float(y) for x, y in zip(correct_labels, total_labels)]
-    acc_at_k = sum(correct_labels) / float(sum(total_labels))
+    acc_at_k_grouped = [x/float(y) for x, y in zip(correct_labels, total_labels)] # grouped
+    acc_at_k = sum(correct_labels) / float(sum(total_labels)) # all
     # print(f'acc at {args.topk} {acc_at_k} {str(acc_at_k_grouped)}')
 
     return acc_at_k, acc_at_k_grouped
@@ -106,7 +106,7 @@ def visit_level_precision(y, p, mask, k):
     for i in range(y.shape[0]):
         predictions = np.argsort(p[i, :])[-k:]
         true_labels = np.nonzero(y[i, :])[0]
-        n_correct = np.in1d(true_labels, predictions, assume_unique=True).sum()
+        n_correct = np.in1d(true_labels, predictions, assume_unique=True).sum() # 直接计算precision
         # pdb.set_trace()
         if mask[i] > 0:
             assert len(true_labels) > 0
